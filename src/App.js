@@ -1,26 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { render } from "react-dom";
+
+const useEventSource = (url) => {
+    const [data, updateData] = useState(null);
+
+    useEffect(() => {
+        const source = new EventSource(url);
+
+        source.onmessage = function logEvents(event) {      
+            updateData(JSON.parse(event.data));     
+        }
+    }, [])
+
+    return data;
+}
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const data = useEventSource('http://localhost:8081/stream-random-numbers/1');
+  if (!data) {
+    return <div />;
+  }
+
+  return <div>The random number {data.value}</div>;
 }
+
+render(<App />, document.getElementById("root"));
 
 export default App;
